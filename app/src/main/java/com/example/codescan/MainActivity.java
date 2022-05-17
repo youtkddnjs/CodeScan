@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions(permissions, 10);
         }
 
+        new HashKey(this).getHashKey();
     }//onCreate
 
     @Override
