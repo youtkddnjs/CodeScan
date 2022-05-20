@@ -2,6 +2,7 @@ package com.example.codescan;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.util.AttributeSet;
 import android.view.Surface;
@@ -9,12 +10,16 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import androidx.annotation.NonNull;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ScanSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 
     Context m_context;
     Camera camera;
     SurfaceHolder surfaceHolder;
+    Camera.Size previewSize;
+    SurfaceView localSurfaceView;
 
     public ScanSurfaceView(Context context) {
         super(context);
@@ -34,9 +39,10 @@ public class ScanSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
 
         try {
-            camera = Camera.open(); //카메라 렌즈 열기
+            camera = Camera.open(0); //카메라 렌즈 열기
             camera.setDisplayOrientation(90);
             camera.setPreviewDisplay(surfaceHolder); //미리보기 설정
+//            setCameraDisplayOrientation(((ScanView) m_context), camera);
         }catch(IOException e){
             e.printStackTrace();
         }
@@ -45,7 +51,27 @@ public class ScanSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
 
-        camera.startPreview();
+        Camera.Parameters parameters = camera.getParameters();
+        List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
+        List<Camera.Size> sizes_pic = parameters.getSupportedPictureSizes();
+        Camera.Size cs = sizes.get(0);
+        int mWidth = cs.width;
+        int meHeight = cs.height;
+        parameters.setPreviewSize(mWidth,meHeight);
+        parameters.setPictureSize(sizes_pic.get(0).width,sizes_pic.get(0).height);
+        parameters.setJpegQuality(85);
+        parameters.setFocusMode(String.valueOf(ImageFormat.JPEG));
+        try {
+            camera.setPreviewDisplay(surfaceHolder);
+            camera.startPreview();
+            camera.autoFocus(null);
+        } catch (IOException e) {
+            e.printStackTrace();
+            camera.stopPreview();
+            camera.release();
+            camera = null;
+        }
+
     }//surfaceChanged
 
     @Override
@@ -56,8 +82,9 @@ public class ScanSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     }//surfaceDestroyed
 
 
-    //setCameraDisplayOrientation(((ScanView) m_context), camera);
 
+
+    //프리뷰 회전 관련 메소드 (퍼옴)
     public static void setCameraDisplayOrientation(Activity activity, Camera camera) {
         int cameraId = -1;
         int numberOfCameras = Camera.getNumberOfCameras();

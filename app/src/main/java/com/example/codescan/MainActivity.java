@@ -31,8 +31,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-
+        
+        
+        //권한 요청
         int checkPermissionResult = checkSelfPermission(Manifest.permission.CAMERA);
         if(checkPermissionResult == PackageManager.PERMISSION_DENIED){
             String[] permissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -42,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
         new HashKey(this).getHashKey();
     }//onCreate
 
+    
+    //권한 요청 결과 메소드
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
